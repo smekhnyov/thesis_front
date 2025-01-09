@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import { init, mockTelegramEnv, themeParams } from '@telegram-apps/sdk-react';
+import { init, mockTelegramEnv, themeParams, backButton } from '@telegram-apps/sdk-react';
 
 const initializeTelegramSDK = async () => {
     try {
@@ -70,20 +70,24 @@ const initializeTelegramSDK = async () => {
 
         console.log('Mock Telegram environment initialized');
     }
+
+    if (themeParams.mount.isAvailable()) {
+        themeParams.mount();
+        console.log(themeParams.isMounted());
+    }
+    
+    if (themeParams.bindCssVars.isAvailable()) {
+        themeParams.bindCssVars();
+        console.log(themeParams.isCssVarsBound());
+    }
+    
+    if (backButton.mount.isAvailable()) {
+        backButton.mount();
+        console.log(backButton.isMounted());
+      }
 };
 
-// Инициализация SDK
 initializeTelegramSDK();
-
-if (themeParams.mount.isAvailable()) {
-    themeParams.mount();
-    console.log(themeParams.isMounted());
-}
-
-if (themeParams.bindCssVars.isAvailable()) {
-    themeParams.bindCssVars();
-    console.log(themeParams.isCssVarsBound());
-}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
