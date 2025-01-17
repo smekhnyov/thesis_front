@@ -1,21 +1,43 @@
 import './App.css';
 import { useState } from 'react';
+import axios from 'axios';
 import { NavBar, ButtonList } from './Components';
 import { backButton } from '@telegram-apps/sdk-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState('tab1');
   const [menuStack, setMenuStack] = useState(['main']);
+  const [items, setItems] = useState([]);
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
     setMenuStack(['main']);
+    setItems([]); // Очистить список элементов при смене вкладки
     backButton.hide();
   };
 
-  const handleMenuNavigation = (newMenu) => {
-    setMenuStack((prevStack) => [...prevStack, newMenu]);
-    backButton.show();
+  const handleSelect = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:5000/api/items');
+      setItems(response.data); // Здесь response.data — это просто массив строк
+      setMenuStack((prevStack) => [...prevStack, 'selectItems']);
+      backButton.show();
+      console.log('Items fetched:', response.data);
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
+  };
+
+  const handleItemClick = async (item) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:5000/api/items/${item}`);
+      setItems(response.data); // Заменяем меню на элементы второго уровня
+      setMenuStack((prevStack) => [...prevStack, `item-${item}`]);
+      backButton.show();
+      console.log('Sub-items fetched for item', item, ':', response.data);
+    } catch (error) {
+      console.error('Error fetching sub-items:', error);
+    }
   };
 
   const handleBackClick = () => {
@@ -27,33 +49,27 @@ function App() {
       }
       return prevStack;
     });
+    setItems([]); // Очистить список элементов при возврате назад
   };
-
 
   backButton.onClick(handleBackClick);
 
-  const menus = {
-    main: [
-      { label: 'SELECT', onClick: () => handleMenuNavigation('selectOptions') },
-      { label: 'INSERT' },
-      { label: 'UPDATE' },
-      { label: 'DELETE' },
-    ],
-    selectOptions: [
-      { label: 'Option 1' },
-      { label: 'Option 2', onClick: () => handleMenuNavigation('option2Submenu') },
-      { label: 'Option 3' },
-    ],
-    option2Submenu: [
-      { label: 'Sub-option 1' },
-      { label: 'Sub-option 2' },
-    ],
-  };
+  const mainMenu = [
+    { label: 'SELECT', onClick: handleSelect },
+    { label: 'INSERT' },
+    { label: 'UPDATE' },
+    { label: 'DELETE' },
+  ];
 
   return (
     <div className="App">
       <div className="tab-content">
-        {activeTab === 'tab1' && <ButtonList buttons={menus[menuStack[menuStack.length - 1]]} />}
+        {activeTab === 'tab1' && (
+          items.length > 0 ?
+            <ButtonList buttons={items.map(item => ({ label: item, onClick: () => handleItemClick(item) }))} />
+            :
+            <ButtonList buttons={mainMenu} />
+        )}
         {activeTab === 'tab2' && (
           <ButtonList buttons={[
             { label: '1' },
