@@ -10,23 +10,11 @@
 
 .tab-content {
   flex: 1;
-  /* Занимает всё доступное пространство */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 20px;
   overflow-y: auto;
-  /* Добавляем прокрутку, если контент превышает высоту */
-}
-
-.settings-grid {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Центровка кнопок по горизонтали */
-  justify-content: center; /* Центровка кнопок по вертикали */
-  height: 100%; /* Заполнить весь доступный контейнер */
-}
-
-.settings-grid button {
-  width: 150px; /* Уменьшенная ширина кнопок */
-  margin: 10px 0; /* Добавление отступа между кнопками */
 }
 
 .tab-bar {
