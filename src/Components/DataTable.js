@@ -13,6 +13,7 @@ import {
     Toolbar,
     Typography,
 } from '@mui/material';
+import { TelegramButton } from './index';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -59,6 +60,16 @@ const DataTable = ({ title, columns, rows }) => {
         return sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [sortedRows, page, rowsPerPage]);
 
+    // New function to copy JSON to clipboard
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(JSON.stringify(rows, null, 2));
+            console.log('Table data copied to clipboard');
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    };
+
     return (
         <Paper
             sx={{
@@ -73,14 +84,19 @@ const DataTable = ({ title, columns, rows }) => {
         >
             <Toolbar
                 sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     backgroundColor: 'var(--tg-theme-button-color)',
                     color: 'var(--tg-theme-text-color)',
-                    borderRadius: '10px'
+                    borderRadius: '10px',
+                    padding: '0 16px',
                 }}
             >
                 <Typography variant="h6" component="div">
                     {title}
                 </Typography>
+                <TelegramButton onClick={handleCopy}>Copy JSON</TelegramButton>
             </Toolbar>
             <TableContainer>
                 <Table sx={{ minWidth: 750 }} size="small">
