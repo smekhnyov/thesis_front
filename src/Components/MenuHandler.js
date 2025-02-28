@@ -61,6 +61,18 @@ const MenuHandler = ({ activeTab }) => {
     }
   };
 
+  const handleInsert = async () => {
+    try {
+      const data = await fetchTables();
+      setItems(data);
+      setMenuStack((prevStack) => [...prevStack, 'insertSelect']);
+      console.log('Tables for INSERT fetched:', data);
+      backButton.show();
+    } catch (error) {
+      console.error('Error fetching tables for INSERT:', error);
+    }
+  };
+
   const handleBackClick = () => {
     // Если мы на уровне таблицы с данными, сбрасываем tableData и возвращаем меню
     if (tableData) {
@@ -82,7 +94,7 @@ const MenuHandler = ({ activeTab }) => {
 
   const mainMenu = [
     { label: 'SELECT', onClick: handleSelect },
-    { label: 'INSERT' },
+    { label: 'INSERT', onClick: handleInsert },
     { label: 'UPDATE' },
     { label: 'DELETE' },
   ];
@@ -93,10 +105,10 @@ const MenuHandler = ({ activeTab }) => {
     const columns =
       tableData.length > 0
         ? Object.keys(tableData[0]).map((key) => ({
-            id: key,
-            label: key,
-            numeric: false,
-          }))
+          id: key,
+          label: key,
+          numeric: false,
+        }))
         : [];
     return <DataTable title={dataTitle} columns={columns} rows={tableData} />;
   }
@@ -105,8 +117,6 @@ const MenuHandler = ({ activeTab }) => {
     <div>
       {activeTab === 'tab1' &&
         (items.length > 0 ? (
-          // Если меню находится на уровне выбора таблицы (menuStack.length === 2),
-          // используем handleSelectTable. Иначе – для выбора столбцов, handleSelectColumn.
           menuStack.length === 2 ? (
             <ButtonList
               buttons={items.map((item) => ({
