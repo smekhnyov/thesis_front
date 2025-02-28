@@ -38,15 +38,22 @@ const MenuHandler = ({ activeTab }) => {
 
   const handleSelectColumn = async (column) => {
     try {
-      // Получаем выбранную таблицу из menuStack (предполагается, что она хранится как "item-{tableName}")
       const tableEntry = menuStack.find((entry) => entry.startsWith('item-'));
       const tableName = tableEntry ? tableEntry.split('-')[1] : null;
       if (!tableName) {
         throw new Error('Table not selected');
       }
-      // Вызываем fetchData всегда с тремя параметрами
-      const data = await fetchData(tableName, column);
-      console.log('Data fetched:', data);
+      // Ожидаем JSON-объект вида { columns: [...], rows: [...] }
+      const response = await fetchData(tableName, column);
+      console.log('Data fetched:', response);
+      // Здесь response.columns – массив названий столбцов
+      // А response.rows – сами данные
+      // Преобразуем rows к массиву объектов
+      const data = response.rows.map(row => {
+        const obj = {};
+        response.columns.forEach((col, index) => (obj[col] = row[index]));
+        return obj;
+      });
       setTableData(data);
       setDataTitle(`${tableName} - ${column}`);
     } catch (error) {
