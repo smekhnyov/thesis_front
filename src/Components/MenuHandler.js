@@ -1,96 +1,28 @@
-import React, { useState } from 'react';
-import { ButtonList } from '.';
-import { fetchTables, fetchColumns, fetchData } from '../api';
-import { backButton } from '@telegram-apps/sdk-react';
+import React from 'react';
 import DataTable from './DataTable';
+import MainMenu from '../Screens/MainMenu';
+import TableMenu from '../Screens/TableMenu';
+import InsertForm from '../Screens/InsertForm';
+import useMenu from '../hooks/useMenu';
 import PropTypes from 'prop-types';
+import ButtonList from './ButtonList';
 
 const MenuHandler = ({ activeTab }) => {
-  const [menuStack, setMenuStack] = useState(['main']);
-  const [items, setItems] = useState([]);
-  const [tableData, setTableData] = useState(null);
-  const [dataTitle, setDataTitle] = useState('');
-
-  const handleSelect = async () => {
-    try {
-      const data = await fetchTables();
-      setItems(data);
-      setMenuStack((prevStack) => [...prevStack, 'selectItems']);
-      console.log('Items fetched:', data);
-      backButton.show();
-    } catch (error) {
-      console.error('Error fetching items:', error);
-    }
-  };
-
-  const handleSelectTable = async (item) => {
-    try {
-      const data = await fetchColumns(item);
-      const updatedData = ['all', ...data];
-      setItems(updatedData);
-      setMenuStack((prevStack) => [...prevStack, `item-${item}`]);
-      console.log('Items fetched:', data);
-      backButton.show();
-    } catch (error) {
-      console.error('Error fetching sub-items:', error);
-    }
-  };
-
-  const handleSelectColumn = async (column) => {
-    try {
-      const tableEntry = menuStack.find((entry) => entry.startsWith('item-'));
-      const tableName = tableEntry ? tableEntry.split('-')[1] : null;
-      if (!tableName) {
-        throw new Error('Table not selected');
-      }
-      // Ожидаем JSON-объект вида { columns: [...], rows: [...] }
-      const response = await fetchData(tableName, column);
-      console.log('Data fetched:', response);
-      // Здесь response.columns – массив названий столбцов
-      // А response.rows – сами данные
-      // Преобразуем rows к массиву объектов
-      const data = response.rows.map(row => {
-        const obj = {};
-        response.columns.forEach((col, index) => (obj[col] = row[index]));
-        return obj;
-      });
-      setTableData(data);
-      setDataTitle(`${tableName} - ${column}`);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const handleInsert = async () => {
-    try {
-      const data = await fetchTables();
-      setItems(data);
-      setMenuStack((prevStack) => [...prevStack, 'insertSelect']);
-      console.log('Tables for INSERT fetched:', data);
-      backButton.show();
-    } catch (error) {
-      console.error('Error fetching tables for INSERT:', error);
-    }
-  };
-
-  const handleBackClick = () => {
-    // Если мы на уровне таблицы с данными, сбрасываем tableData и возвращаем меню
-    if (tableData) {
-      setTableData(null);
-      return;
-    }
-    setMenuStack((prevStack) => {
-      if (prevStack.length > 1) {
-        const newStack = prevStack.slice(0, -1);
-        if (newStack.length === 1) backButton.hide();
-        return newStack;
-      }
-      return prevStack;
-    });
-    setItems([]);
-  };
-
-  backButton.onClick(handleBackClick);
+  const {
+    menuStack,
+    items,
+    tableData,
+    dataTitle,
+    insertColumns,
+    insertTable,
+    handleSelect,
+    handleSelectTable,
+    handleSelectColumn,
+    handleInsert,
+    handleInsertTable,
+    handleInsertSubmit,
+    handleBackClick,
+  } = useMenu();
 
   const mainMenu = [
     { label: 'SELECT', onClick: handleSelect },
@@ -99,49 +31,58 @@ const MenuHandler = ({ activeTab }) => {
     { label: 'DELETE' },
   ];
 
-  // Если есть данные таблицы, отображаем компонент DataTable
+  // Отрисовка таблицы данных для SELECT
   if (activeTab === 'tab1' && tableData) {
-    // Динамически создаем описание колонок на основе ключей первой строки, если данные присутствуют
-    const columns =
-      tableData.length > 0
-        ? Object.keys(tableData[0]).map((key) => ({
+    const columns = tableData.length > 0
+      ? Object.keys(tableData[0]).map(key => ({
           id: key,
           label: key,
-          numeric: false,
+          numeric: false
         }))
-        : [];
+      : [];
     return <DataTable title={dataTitle} columns={columns} rows={tableData} />;
+  }
+
+  // Отрисовка формы INSERT, если получены колонки для вставки
+  if (activeTab === 'tab1' && insertColumns) {
+    return (
+      <InsertForm
+        table={insertTable}
+        columns={insertColumns}
+        onSubmit={handleInsertSubmit}
+        onBack={handleBackClick}
+      />
+    );
   }
 
   return (
     <div>
-      {activeTab === 'tab1' &&
-        (items.length > 0 ? (
-          menuStack.length === 2 ? (
-            <ButtonList
-              buttons={items.map((item) => ({
-                label: item,
-                onClick: () => handleSelectTable(item),
-              }))}
-            />
+      {activeTab === 'tab1' && (
+        <>
+          {items.length > 0 ? (
+            // Если мы в потоке INSERT, используем handleInsertTable
+            menuStack.includes('insertSelect') ? (
+              <TableMenu items={items} onSelect={handleInsertTable} />
+            ) : (
+              // Для SELECT-ветки
+              menuStack.length === 2 ? (
+                <TableMenu items={items} onSelect={handleSelectTable} />
+              ) : (
+                <TableMenu items={items} onSelect={handleSelectColumn} />
+              )
+            )
           ) : (
-            <ButtonList
-              buttons={items.map((item) => ({
-                label: item,
-                onClick: () => handleSelectColumn(item),
-              }))}
-            />
-          )
-        ) : (
-          <ButtonList buttons={mainMenu} />
-        ))}
+            <MainMenu mainMenu={mainMenu} />
+          )}
+        </>
+      )}
       {activeTab === 'tab2' && (
         <ButtonList
           buttons={[
             { label: '1' },
             { label: '2' },
             { label: '3' },
-            { label: '4' },
+            { label: '4' }
           ]}
         />
       )}
@@ -150,7 +91,7 @@ const MenuHandler = ({ activeTab }) => {
 };
 
 MenuHandler.propTypes = {
-  activeTab: PropTypes.string.isRequired,
+  activeTab: PropTypes.string.isRequired
 };
 
 export default MenuHandler;
