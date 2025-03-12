@@ -15,6 +15,7 @@
   justify-content: center;
   margin: 20px;
   overflow-y: auto;
+  padding-bottom: 60px;
 }
 
 .tab-bar {
