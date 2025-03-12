@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import DataTable from './DataTable';
 import MainMenu from '../Screens/MainMenu';
 import TableMenu from '../Screens/TableMenu';
@@ -22,7 +22,14 @@ const MenuHandler = ({ activeTab }) => {
     handleInsertTable,
     handleInsertSubmit,
     handleBackClick,
+    resetMenu,
   } = useMenu();
+
+  useEffect(() => {
+    if (activeTab === 'tab1') {
+      resetMenu();
+    }
+  }, [activeTab, resetMenu]);
 
   const mainMenu = [
     { label: 'SELECT', onClick: handleSelect },
@@ -31,7 +38,6 @@ const MenuHandler = ({ activeTab }) => {
     { label: 'DELETE' },
   ];
 
-  // Отрисовка таблицы данных для SELECT
   if (activeTab === 'tab1' && tableData) {
     const columns = tableData.length > 0
       ? Object.keys(tableData[0]).map(key => ({
@@ -43,7 +49,6 @@ const MenuHandler = ({ activeTab }) => {
     return <DataTable title={dataTitle} columns={columns} rows={tableData} />;
   }
 
-  // Отрисовка формы INSERT, если получены колонки для вставки
   if (activeTab === 'tab1' && insertColumns) {
     return (
       <InsertForm
@@ -60,11 +65,9 @@ const MenuHandler = ({ activeTab }) => {
       {activeTab === 'tab1' && (
         <>
           {items.length > 0 ? (
-            // Если мы в потоке INSERT, используем handleInsertTable
             menuStack.includes('insertSelect') ? (
               <TableMenu items={items} onSelect={handleInsertTable} />
             ) : (
-              // Для SELECT-ветки
               menuStack.length === 2 ? (
                 <TableMenu items={items} onSelect={handleSelectTable} />
               ) : (

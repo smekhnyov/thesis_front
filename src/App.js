@@ -7,7 +7,13 @@ function App() {
   const [activeTab, setActiveTab] = useState('tab1');
 
   const handleChange = (event, newValue) => {
-    setActiveTab(newValue);
+    if (activeTab === newValue) {
+      // Если нажата та же вкладка, сбрасываем состояние меню
+      setActiveTab('');
+      setTimeout(() => setActiveTab(newValue), 0); // Переключаем обратно на ту же вкладку
+    } else {
+      setActiveTab(newValue);
+    }
   };
 
   return (

@@ -7,7 +7,6 @@ const useMenu = () => {
   const [items, setItems] = useState([]);
   const [tableData, setTableData] = useState(null);
   const [dataTitle, setDataTitle] = useState('');
-  // Состояния для INSERT-потока
   const [insertColumns, setInsertColumns] = useState(null);
   const [insertTable, setInsertTable] = useState(null);
 
@@ -74,7 +73,6 @@ const useMenu = () => {
   const handleInsertTable = useCallback(async (table) => {
     try {
       const columns = await fetchColumns(table);
-      // Предполагается, что fetchColumns возвращает массив названий колонок
       setInsertColumns(columns);
       setInsertTable(table);
       setMenuStack(prev => [...prev, 'insertForm']);
@@ -86,9 +84,7 @@ const useMenu = () => {
 
   const handleInsertSubmit = useCallback(async ({ table, data }) => {
     try {
-      // Здесь можно выполнить API-запрос для вставки данных
       console.log(`Insert into ${table}: `, data);
-      // После успешной вставки сбросим состояние
       setInsertColumns(null);
       setInsertTable(null);
       setMenuStack(['main']);
@@ -103,7 +99,6 @@ const useMenu = () => {
       setTableData(null);
       return;
     }
-    // Если мы в потоке INSERT и форма открыта, сбрасываем состояния insert
     if (insertColumns) {
       setInsertColumns(null);
       setInsertTable(null);
@@ -119,6 +114,15 @@ const useMenu = () => {
     });
     setItems([]);
   }, [tableData, insertColumns]);
+
+  const resetMenu = useCallback(() => {
+    setMenuStack(['main']);
+    setItems([]);
+    setTableData(null);
+    setDataTitle('');
+    setInsertColumns(null);
+    setInsertTable(null);
+  }, []);
 
   backButton.onClick(handleBackClick);
 
@@ -136,6 +140,7 @@ const useMenu = () => {
     handleInsertTable,
     handleInsertSubmit,
     handleBackClick,
+    resetMenu,
   };
 };
 

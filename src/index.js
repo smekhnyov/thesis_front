@@ -68,7 +68,7 @@ const initializeTelegramSDK = async () => {
             platform: 'tdesktop',
         });
 
-        console.log('Mock Telegram environment initialized');
+        console.log('Fake Telegram environment initialized');
     }
 
     if (themeParams.mount.isAvailable()) {
@@ -84,6 +84,7 @@ const initializeTelegramSDK = async () => {
     if (backButton.mount.isAvailable()) {
         backButton.mount();
         console.log(backButton.isMounted());
+        // const onBack = backButton.isMounted();
       }
 };
 
