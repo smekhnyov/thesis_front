@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     Paper,
@@ -37,6 +37,23 @@ const DataTable = ({ title, columns, rows }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
+    useEffect(() => {
+        const calculateRowsPerPage = () => {
+            const navbarHeight = 60; // Замените на фактическую высоту вашего navbar
+            const rowHeight = 48; // Высота строки таблицы (может потребоваться корректировка)
+            const availableHeight = window.innerHeight - navbarHeight;
+            const calculatedRowsPerPage = Math.floor(availableHeight / rowHeight);
+            setRowsPerPage(calculatedRowsPerPage);
+        };
+
+        calculateRowsPerPage();
+        window.addEventListener('resize', calculateRowsPerPage);
+
+        return () => {
+            window.removeEventListener('resize', calculateRowsPerPage);
+        };
+    }, []);
+
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -47,11 +64,6 @@ const DataTable = ({ title, columns, rows }) => {
         setPage(newPage);
     };
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
     const sortedRows = useMemo(() => {
         return rows.slice().sort(getComparator(order, orderBy));
     }, [rows, order, orderBy]);
@@ -60,7 +72,6 @@ const DataTable = ({ title, columns, rows }) => {
         return sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [sortedRows, page, rowsPerPage]);
 
-    // New function to copy JSON to clipboard
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(JSON.stringify(rows, null, 2));
@@ -73,13 +84,15 @@ const DataTable = ({ title, columns, rows }) => {
     return (
         <Paper
             sx={{
-                width: '100%',
+                width: 'auto',
                 mb: 2,
                 backgroundColor: 'var(--tg-theme-bg-color)',
                 color: 'var(--tg-theme-text-color)',
                 border: '1px solid var(--tg-theme-button-color)',
                 borderRadius: '10px',
                 padding: 2,
+                overflowX: 'auto', // Добавлено для горизонтальной прокрутки
+                marginTop: 'auto',
             }}
         >
             <Toolbar
@@ -96,10 +109,10 @@ const DataTable = ({ title, columns, rows }) => {
                 <Typography variant="h6" component="div">
                     {title}
                 </Typography>
-                <TelegramButton onClick={handleCopy}>Copy JSON</TelegramButton>
+                <TelegramButton onClick={handleCopy} sx={{marginLeft: '20px'}}>Copy JSON</TelegramButton>
             </Toolbar>
             <TableContainer>
-                <Table sx={{ minWidth: 750 }} size="small">
+                <Table size="small">
                     <TableHead>
                         <TableRow>
                             {columns.map((col) => (
@@ -107,7 +120,10 @@ const DataTable = ({ title, columns, rows }) => {
                                     key={col.id}
                                     align={col.numeric ? 'right' : 'left'}
                                     sortDirection={orderBy === col.id ? order : false}
-                                    sx={{ borderColor: 'var(--tg-theme-button-color)' }}
+                                    sx={{ 
+                                        borderColor: 'var(--tg-theme-button-color)',
+                                        width: 'auto' // Автоматическая ширина для ячеек заголовка
+                                    }}
                                 >
                                     <TableSortLabel
                                         active={orderBy === col.id}
@@ -137,7 +153,11 @@ const DataTable = ({ title, columns, rows }) => {
                                     <TableCell
                                         key={col.id}
                                         align={col.numeric ? 'right' : 'left'}
-                                        sx={{ borderColor: 'var(--tg-theme-button-color)', color: 'var(--tg-theme-text-color)' }}
+                                        sx={{ 
+                                            borderColor: 'var(--tg-theme-button-color)', 
+                                            color: 'var(--tg-theme-text-color)',
+                                            width: 'auto' // Автоматическая ширина для ячеек данных
+                                        }}
                                     >
                                         {row[col.id]}
                                     </TableCell>
@@ -148,13 +168,12 @@ const DataTable = ({ title, columns, rows }) => {
                 </Table>
             </TableContainer>
             <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
+                rowsPerPageOptions={[rowsPerPage]}
                 component="div"
                 count={rows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
                 sx={{
                     backgroundColor: 'var(--tg-theme-bg-color)',
                     color: 'var(--tg-theme-text-color)',
