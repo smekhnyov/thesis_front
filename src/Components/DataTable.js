@@ -13,7 +13,7 @@ import {
     Toolbar,
     Typography,
 } from '@mui/material';
-import { TelegramButton } from './index';
+import { TelegramButton } from './';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {

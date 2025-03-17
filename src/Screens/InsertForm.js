@@ -9,7 +9,7 @@ import {
     FormControlLabel,
     MenuItem
 } from '@mui/material';
-import TelegramButton from '../Components/TelegramButton';
+import { TelegramButton } from '../Components';
 import { insertData, fetchColumnTypes } from '../hooks/api';
 
 const InsertForm = ({ table, onSubmit, onBack }) => {
@@ -55,7 +55,11 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
     // Валидация отдельного поля
     const validateField = (col, value) => {
         // Проверка NOT NULL
-        if (col.is_nullable === 'NO' && (value === '' || value === null || (typeof value === 'string' && value.trim() === ''))) {
+        if (col.is_nullable === 'NO' && (value === '' || value === null || (typeof value === "string" && value.includes("nextval")) || (typeof value === 'string' && value.trim() === ''))) {
+            // Пропускаем проверку, если default включает nextval (автоинкремент)
+            if (col.default && col.default.includes('nextval')) {
+                return '';
+            }
             return `Поле "${col.name}" не может быть пустым.`;
         }
         // Проверка числовых типов
@@ -82,7 +86,7 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
             }
         }
         // Проверка внешнего ключа (если есть список опций, значение должно существовать в списке)
-        if (col.foreignKey && col.options && value) {
+        if (col.foreign_keys && col.options && value) {
             if (!col.options.find(option => option.value === value)) {
                 return `Выберите корректное значение для поля "${col.name}".`;
             }
@@ -142,6 +146,10 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
         const finalData = {};
         for (const col of columns) {
             let value = formValues[col.name];
+            // Пропускаем поле, если оно пустое и default включает nextval (автоинкремент)
+            if ((value === '' || value === null) && col.default && col.default.includes('nextval')) {
+                continue;
+            }
             if ((value === '' || value === null) && col.default !== undefined) {
                 value = col.default;
             }
@@ -208,7 +216,7 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
                                     }}
                                 />
                             );
-                        } else if (col.foreignKey && col.options && Array.isArray(col.options)) {
+                        } else if (col.foreign_keys && col.options && Array.isArray(col.options)) {
                             return (
                                 <TextField
                                     key={col.name}
@@ -243,7 +251,7 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
                                     }}
                                 >
                                     {col.options.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
+                                        <MenuItem key={option.value} value={option.value} sx={{ color: 'var(--tg-theme-text-color)', background: 'var(--tg-theme-bg-color)' }}>
                                             {option.label}
                                         </MenuItem>
                                     ))}

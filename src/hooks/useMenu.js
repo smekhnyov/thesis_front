@@ -9,6 +9,7 @@ const useMenu = () => {
   const [dataTitle, setDataTitle] = useState('');
   const [insertColumns, setInsertColumns] = useState(null);
   const [insertTable, setInsertTable] = useState(null);
+  const [updateTable, setUpdateTable] = useState(null);
 
   const handleSelect = useCallback(async () => {
     try {
@@ -94,6 +95,34 @@ const useMenu = () => {
     }
   }, []);
 
+  const handleUpdate = useCallback(async () => {
+    try {
+      const data = await fetchTables();
+      setItems(data);
+      setMenuStack(prev => [...prev, 'updateSelect']);
+      console.log('Tables for UPDATE fetched:', data);
+      backButton.show();
+    } catch (error) {
+      console.error('Error fetching tables for UPDATE:', error);
+    }
+  }, []);
+
+  const handleUpdateTable = useCallback(async (table) => {
+    setUpdateTable(table);
+    setMenuStack(prev => [...prev, 'updateForm']);
+  }, []);
+
+  const handleUpdateSubmit = useCallback(async ({ table, data }) => {
+    try {
+      console.log(`Update ${table}: `, data);
+      setUpdateTable(null);
+      setMenuStack(['main']);
+      setItems([]);
+    } catch (error) {
+      console.error('Error updating data:', error);
+    }
+  }, []);
+
   const handleBackClick = useCallback(() => {
     if (tableData) {
       setTableData(null);
@@ -102,6 +131,10 @@ const useMenu = () => {
     if (insertColumns) {
       setInsertColumns(null);
       setInsertTable(null);
+      return;
+    }
+    if (updateTable) {
+      setUpdateTable(null);
       return;
     }
     setMenuStack(prevStack => {
@@ -113,7 +146,7 @@ const useMenu = () => {
       return prevStack;
     });
     setItems([]);
-  }, [tableData, insertColumns]);
+  }, [tableData, insertColumns, updateTable]);
 
   const resetMenu = useCallback(() => {
     setMenuStack(['main']);
@@ -122,6 +155,7 @@ const useMenu = () => {
     setDataTitle('');
     setInsertColumns(null);
     setInsertTable(null);
+    setUpdateTable(null);
   }, []);
 
   backButton.onClick(handleBackClick);
@@ -133,12 +167,16 @@ const useMenu = () => {
     dataTitle,
     insertColumns,
     insertTable,
+    updateTable,
     handleSelect,
     handleSelectTable,
     handleSelectColumn,
     handleInsert,
     handleInsertTable,
     handleInsertSubmit,
+    handleUpdate,
+    handleUpdateTable,
+    handleUpdateSubmit,
     handleBackClick,
     resetMenu,
   };

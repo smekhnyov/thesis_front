@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import DataTable from './DataTable';
 import MainMenu from '../Screens/MainMenu';
 import TableMenu from '../Screens/TableMenu';
 import InsertForm from '../Screens/InsertForm';
+import UpdateForm from '../Screens/UpdateForm';
 import useMenu from '../hooks/useMenu';
 import PropTypes from 'prop-types';
-import ButtonList from './ButtonList';
+import { ButtonList, DataTable } from './';
 
 const MenuHandler = ({ activeTab }) => {
   const {
@@ -15,12 +15,16 @@ const MenuHandler = ({ activeTab }) => {
     dataTitle,
     insertColumns,
     insertTable,
+    updateTable,
     handleSelect,
     handleSelectTable,
     handleSelectColumn,
     handleInsert,
     handleInsertTable,
     handleInsertSubmit,
+    handleUpdate,
+    handleUpdateTable,
+    handleUpdateSubmit,
     handleBackClick,
     resetMenu,
   } = useMenu();
@@ -34,7 +38,7 @@ const MenuHandler = ({ activeTab }) => {
   const mainMenu = [
     { label: 'SELECT', onClick: handleSelect },
     { label: 'INSERT', onClick: handleInsert },
-    { label: 'UPDATE' },
+    { label: 'UPDATE', onClick: handleUpdate },
     { label: 'DELETE' },
   ];
 
@@ -60,6 +64,16 @@ const MenuHandler = ({ activeTab }) => {
     );
   }
 
+  if (activeTab === 'tab1' && updateTable) {
+    return (
+      <UpdateForm
+        table={updateTable}
+        onSubmit={handleUpdateSubmit}
+        onBack={handleBackClick}
+      />
+    );
+  }
+
   return (
     <div>
       {activeTab === 'tab1' && (
@@ -67,6 +81,8 @@ const MenuHandler = ({ activeTab }) => {
           {items.length > 0 ? (
             menuStack.includes('insertSelect') ? (
               <TableMenu items={items} onSelect={handleInsertTable} />
+            ) : menuStack.includes('updateSelect') ? (
+              <TableMenu items={items} onSelect={handleUpdateTable} />
             ) : (
               menuStack.length === 2 ? (
                 <TableMenu items={items} onSelect={handleSelectTable} />
