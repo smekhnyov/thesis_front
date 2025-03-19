@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { fetchTables, fetchColumns, fetchData } from './api';
+import { fetchTables, fetchColumns, fetchData, fetchPrimaryKey, deleteData } from './api';
 import { backButton } from '@telegram-apps/sdk-react';
 
 const useMenu = () => {
@@ -10,6 +10,7 @@ const useMenu = () => {
   const [insertColumns, setInsertColumns] = useState(null);
   const [insertTable, setInsertTable] = useState(null);
   const [updateTable, setUpdateTable] = useState(null);
+  const [deleteTable, setDeleteTable] = useState(null);
 
   const handleSelect = useCallback(async () => {
     try {
@@ -148,6 +149,44 @@ const useMenu = () => {
     setItems([]);
   }, [tableData, insertColumns, updateTable]);
 
+  const handleDelete = useCallback(async () => {
+    try {
+      const data = await fetchTables();
+      setItems(data);
+      setMenuStack(prev => [...prev, 'deleteSelect']);
+      console.log('Tables for DELETE fetched:', data);
+      backButton.show();
+    } catch (error) {
+      console.error('Error fetching tables for DELETE:', error);
+    }
+  }, []);
+
+  const handleDeleteTable = useCallback(async (table) => {
+    try {
+      const response = await fetchPrimaryKey(table);
+      if (response.status === 'success') {
+        setDeleteTable({ table, primaryKeyValues: response.primary_key_values });
+        setMenuStack(prev => [...prev, 'deleteForm']);
+      } else {
+        console.error('Error fetching primary key values for DELETE:', response.message);
+      }
+    } catch (error) {
+      console.error('Error fetching primary key values for DELETE:', error);
+    }
+  }, []);
+
+  const handleDeleteSubmit = useCallback(async (table, keyValue) => {
+    try {
+      console.log(`Deleting from ${table} where primary key = ${keyValue}`);
+      await deleteData(table, keyValue);
+      setDeleteTable(null);
+      setMenuStack(['main']);
+      setItems([]);
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
+  }, []);
+
   const resetMenu = useCallback(() => {
     setMenuStack(['main']);
     setItems([]);
@@ -168,6 +207,7 @@ const useMenu = () => {
     insertColumns,
     insertTable,
     updateTable,
+    deleteTable,
     handleSelect,
     handleSelectTable,
     handleSelectColumn,
@@ -177,6 +217,9 @@ const useMenu = () => {
     handleUpdate,
     handleUpdateTable,
     handleUpdateSubmit,
+    handleDelete,
+    handleDeleteTable,
+    handleDeleteSubmit,
     handleBackClick,
     resetMenu,
   };

@@ -13,7 +13,7 @@ export const fetchColumns = async (table) => {
     const response = await axios.get(`${SERVER_URL}/column/${table}`);
     return response.data;
 }
-;
+    ;
 export const fetchColumnTypes = async (table) => {
     const response = await axios.get(`${SERVER_URL}/column_types/${table}`);
     console.log('fetchColumnTypes response:', response);
@@ -70,6 +70,18 @@ export const updateData = async (dataDict) => {
         return response.data;
     } catch (error) {
         console.error('Error updating data:', error);
+        throw error;
+    }
+};
+
+export const deleteData = async (table, keyValue) => {
+    try {
+        const response = await axios.delete(`${SERVER_URL}/delete`, {
+            data: { table, key_value: keyValue },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting data:', error);
         throw error;
     }
 };

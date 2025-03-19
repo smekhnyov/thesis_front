@@ -92,7 +92,7 @@ const DataTable = ({ title, columns, rows }) => {
                 borderRadius: '10px',
                 padding: 2,
                 overflowX: 'auto', // Добавлено для горизонтальной прокрутки
-                marginTop: 'auto',
+                marginTop: '0',
             }}
         >
             <Toolbar

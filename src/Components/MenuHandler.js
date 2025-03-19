@@ -3,6 +3,7 @@ import MainMenu from '../Screens/MainMenu';
 import TableMenu from '../Screens/TableMenu';
 import InsertForm from '../Screens/InsertForm';
 import UpdateForm from '../Screens/UpdateForm';
+import DeleteForm from '../Screens/DeleteForm';
 import useMenu from '../hooks/useMenu';
 import PropTypes from 'prop-types';
 import { ButtonList, DataTable } from './';
@@ -16,6 +17,7 @@ const MenuHandler = ({ activeTab }) => {
     insertColumns,
     insertTable,
     updateTable,
+    deleteTable,
     handleSelect,
     handleSelectTable,
     handleSelectColumn,
@@ -25,6 +27,9 @@ const MenuHandler = ({ activeTab }) => {
     handleUpdate,
     handleUpdateTable,
     handleUpdateSubmit,
+    handleDelete,
+    handleDeleteTable,
+    handleDeleteSubmit,
     handleBackClick,
     resetMenu,
   } = useMenu();
@@ -39,7 +44,7 @@ const MenuHandler = ({ activeTab }) => {
     { label: 'SELECT', onClick: handleSelect },
     { label: 'INSERT', onClick: handleInsert },
     { label: 'UPDATE', onClick: handleUpdate },
-    { label: 'DELETE' },
+    { label: 'DELETE', onClick: handleDelete },
   ];
 
   if (activeTab === 'tab1' && tableData) {
@@ -74,6 +79,16 @@ const MenuHandler = ({ activeTab }) => {
     );
   }
 
+  if (activeTab === 'tab1' && deleteTable) {
+    return (
+      <DeleteForm
+        table={deleteTable.table}
+        onSubmit={(keyValue) => handleDeleteSubmit(deleteTable.table, keyValue)}
+        onBack={handleBackClick}
+      />
+    );
+  }
+
   return (
     <div>
       {activeTab === 'tab1' && (
@@ -83,6 +98,8 @@ const MenuHandler = ({ activeTab }) => {
               <TableMenu items={items} onSelect={handleInsertTable} />
             ) : menuStack.includes('updateSelect') ? (
               <TableMenu items={items} onSelect={handleUpdateTable} />
+            ) : menuStack.includes('deleteSelect') ? (
+              <TableMenu items={items} onSelect={handleDeleteTable} />
             ) : (
               menuStack.length === 2 ? (
                 <TableMenu items={items} onSelect={handleSelectTable} />
