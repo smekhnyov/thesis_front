@@ -2,31 +2,15 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     Box,
-    Snackbar,
-    Alert,
-    List,
-    ListItemText,
-    ListItemButton,
+    Grid,
 } from '@mui/material';
 import { TelegramButton, RecordTable } from '../Components/';
 import { fetchPrimaryKey, fetchDataById, deleteData } from '../hooks/api';
-import styled from '@mui/material/styles/styled';
 
-const TelegramListItemButton = styled(ListItemButton)({
-    backgroundColor: 'var(--tg-theme-button-color)', // Цвет фона кнопки
-    color: 'var(--tg-theme-text-color)', // Цвет текста кнопки
-    borderRadius: '4px',
-    '&:hover': {
-        backgroundColor: 'var(--tg-theme-button-hover-bg-color)', // Цвет фона при наведении
-    },
-});
-
-const DeleteForm = ({ table, onSubmit, onBack }) => {
+const DeleteForm = ({ table, onSubmit, onBack, onError }) => {
     const [primaryKeyValues, setPrimaryKeyValues] = useState([]);
     const [selectedKeyValue, setSelectedKeyValue] = useState(null);
     const [recordData, setRecordData] = useState(null);
-    const [error, setError] = useState('');
-    const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     // Загружаем значения первичного ключа
@@ -38,18 +22,16 @@ const DeleteForm = ({ table, onSubmit, onBack }) => {
                     const sortedPrimaryKeyValues = response.primary_key_values.sort((a, b) => a - b);
                     setPrimaryKeyValues(sortedPrimaryKeyValues);
                 } else {
-                    setError('Ошибка загрузки значений первичного ключа.');
-                    setOpen(true);
+                    onError('Ошибка загрузки значений первичного ключа.');
                 }
             } catch (err) {
-                setError(`Ошибка: ${err.message}`);
-                setOpen(true);
+                onError(`Ошибка: ${err.message}`);
             } finally {
                 setLoading(false);
             }
         };
         fetchPrimaryKeyValues();
-    }, [table]);
+    }, [table, onError]);
 
     // Загружаем данные записи по выбранному ключу
     useEffect(() => {
@@ -60,17 +42,15 @@ const DeleteForm = ({ table, onSubmit, onBack }) => {
                     if (response.status === 'success') {
                         setRecordData(response.data);
                     } else {
-                        setError('Ошибка загрузки данных записи.');
-                        setOpen(true);
+                        onError('Ошибка загрузки данных записи.');
                     }
                 } catch (err) {
-                    setError(`Ошибка: ${err.message}`);
-                    setOpen(true);
+                    onError(`Ошибка: ${err.message}`);
                 }
             };
             fetchRecordData();
         }
-    }, [selectedKeyValue, table]);
+    }, [selectedKeyValue, table, onError]);
 
     const handleDelete = async () => {
         try {
@@ -81,15 +61,9 @@ const DeleteForm = ({ table, onSubmit, onBack }) => {
                 err.response && err.response.data && err.response.data.message
                     ? err.response.data.message
                     : err.message || 'Неизвестная ошибка';
-    
-            setError(`Ошибка при удалении данных: ${serverMessage}`);
-            setOpen(true);
-        }
-    };
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') return;
-        setOpen(false);
+            onError(`Ошибка при удалении данных: ${serverMessage}`);
+        }
     };
 
     if (loading) {
@@ -107,17 +81,19 @@ const DeleteForm = ({ table, onSubmit, onBack }) => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 2,
-                        marginTop: "auto"
+                        marginTop: "0"
                     }}
                 >
                     <h2>Выберите значение первичного ключа для удаления</h2>
-                    <List>
+                    <Grid container spacing={0.5} justifyContent="center">
                         {primaryKeyValues.map((value) => (
-                            <TelegramListItemButton key={value} onClick={() => setSelectedKeyValue(value)}>
-                                <ListItemText primary={value} />
-                            </TelegramListItemButton>
+                            <Grid item key={value}>
+                                <TelegramButton onClick={() => setSelectedKeyValue(value)}>
+                                    {value}
+                                </TelegramButton>
+                            </Grid>
                         ))}
-                    </List>
+                    </Grid>
                 </Box>
             ) : recordData ? (
                 <Box
@@ -147,11 +123,6 @@ const DeleteForm = ({ table, onSubmit, onBack }) => {
             ) : (
                 <div>Загрузка данных записи...</div>
             )}
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                    {error}
-                </Alert>
-            </Snackbar>
         </>
     );
 };
@@ -160,6 +131,7 @@ DeleteForm.propTypes = {
     table: PropTypes.string.isRequired,
     onSubmit: PropTypes.func.isRequired,
     onBack: PropTypes.func,
+    onError: PropTypes.func.isRequired,
 };
 
 export default DeleteForm;

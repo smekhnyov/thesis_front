@@ -8,24 +8,12 @@ import {
     Checkbox,
     FormControlLabel,
     MenuItem,
-    List,
-    ListItemText,
-    ListItemButton,
+    Grid,
 } from '@mui/material';
 import { TelegramButton } from '../Components/';
 import { updateData, fetchColumnTypes, fetchDataById, fetchPrimaryKey } from '../hooks/api';
-import styled from '@mui/material/styles/styled';
 
-const TelegramListItemButton = styled(ListItemButton)({
-    backgroundColor: 'var(--tg-theme-button-color)', // Цвет фона кнопки
-    color: 'var(--tg-theme-text-color)', // Цвет текста кнопки
-    borderRadius: '4px',
-    '&:hover': {
-        backgroundColor: 'var(--tg-theme-button-hover-bg-color)', // Цвет фона при наведении
-    },
-});
-
-const UpdateForm = ({ table, onSubmit, onBack }) => {
+const UpdateForm = ({ table, onSubmit, onBack, onError }) => {
     const [columns, setColumns] = useState([]);
     const [primaryKeyValues, setPrimaryKeyValues] = useState([]);
     const [selectedKeyValue, setSelectedKeyValue] = useState(null);
@@ -169,42 +157,41 @@ const UpdateForm = ({ table, onSubmit, onBack }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = {};
-
+    
         // Валидация всех полей
         for (const col of columns) {
-            const value = formValues[col.name];
-            const errorMsg = validateField(col, value);
-            if (errorMsg) {
-                errors[col.name] = errorMsg;
-            }
+          const value = formValues[col.name];
+          const errorMsg = validateField(col, value);
+          if (errorMsg) {
+            errors[col.name] = errorMsg;
+          }
         }
-
+    
         if (Object.keys(errors).length > 0) {
-            setFieldErrors(errors);
-            return;
+          setFieldErrors(errors);
+          return;
         } else {
-            setFieldErrors({});
+          setFieldErrors({});
         }
-
+    
         const dataDict = {
-            table,
-            data: formValues,
-            condition: selectedKeyValue
+          table,
+          data: formValues,
+          condition: selectedKeyValue
         };
-
+    
         try {
-            await updateData(dataDict);
-            onSubmit(dataDict);
+          await updateData(dataDict);
+          onSubmit(dataDict);
         } catch (err) {
-            let serverMessage =
-                err.response && err.response.data && err.response.data.message
-                    ? err.response.data.message
-                    : err.message || 'Неизвестная ошибка';
-
-            setError(`Ошибка при обновлении данных: ${serverMessage}`);
-            setOpen(true);
+          let serverMessage =
+            err.response && err.response.data && err.response.data.message
+              ? err.response.data.message
+              : err.message || 'Неизвестная ошибка';
+    
+          onError(`Ошибка при обновлении данных: ${serverMessage}`);
         }
-    };
+      };
 
     if (loading) {
         return <div>Загрузка...</div>;
@@ -221,17 +208,19 @@ const UpdateForm = ({ table, onSubmit, onBack }) => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 2,
-                        marginTop: "auto"
+                        marginTop: "0"
                     }}
                 >
                     <h2>Выберите значение первичного ключа для обновления</h2>
-                    <List>
+                    <Grid container spacing={0.5} justifyContent="center">
                         {primaryKeyValues.map((value) => (
-                            <TelegramListItemButton key={value} onClick={() => setSelectedKeyValue(value)}>
-                                <ListItemText primary={value} />
-                            </TelegramListItemButton>
+                            <Grid item key={value}>
+                                <TelegramButton onClick={() => setSelectedKeyValue(value)}>
+                                    {value}
+                                </TelegramButton>
+                            </Grid>
                         ))}
-                    </List>
+                    </Grid>
                 </Box>
             ) : (
                 <form onSubmit={handleSubmit}>
@@ -281,6 +270,9 @@ const UpdateForm = ({ table, onSubmit, onBack }) => {
                                         sx={{
                                             width: '250px',
                                             '& label.Mui': {
+                                                color: 'var(--tg-theme-text-color)'
+                                            },
+                                            '& .MuiFormLabel-root': {
                                                 color: 'var(--tg-theme-text-color)'
                                             },
                                             '& .MuiInputBase-input': {
@@ -382,6 +374,7 @@ UpdateForm.propTypes = {
     table: PropTypes.string.isRequired,
     onSubmit: PropTypes.func.isRequired,
     onBack: PropTypes.func,
+    onError: PropTypes.func.isRequired,
 };
 
 export default UpdateForm;
