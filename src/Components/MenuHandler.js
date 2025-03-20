@@ -8,7 +8,7 @@ import useMenu from '../hooks/useMenu';
 import PropTypes from 'prop-types';
 import { ButtonList, DataTable } from './';
 
-const MenuHandler = ({ activeTab }) => {
+const MenuHandler = ({ activeTab, onError }) => {
   const {
     menuStack,
     items,
@@ -65,6 +65,7 @@ const MenuHandler = ({ activeTab }) => {
         columns={insertColumns}
         onSubmit={handleInsertSubmit}
         onBack={handleBackClick}
+        onError={onError}
       />
     );
   }
@@ -75,6 +76,7 @@ const MenuHandler = ({ activeTab }) => {
         table={updateTable}
         onSubmit={handleUpdateSubmit}
         onBack={handleBackClick}
+        onError={onError}
       />
     );
   }
@@ -85,6 +87,7 @@ const MenuHandler = ({ activeTab }) => {
         table={deleteTable.table}
         onSubmit={(keyValue) => handleDeleteSubmit(deleteTable.table, keyValue)}
         onBack={handleBackClick}
+        onError={onError}
       />
     );
   }
@@ -127,7 +130,8 @@ const MenuHandler = ({ activeTab }) => {
 };
 
 MenuHandler.propTypes = {
-  activeTab: PropTypes.string.isRequired
+  activeTab: PropTypes.string.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default MenuHandler;

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     Box,
-    Snackbar,
-    Alert,
     TextField,
     Checkbox,
     FormControlLabel,
@@ -12,12 +10,10 @@ import {
 import { TelegramButton } from '../Components';
 import { insertData, fetchColumnTypes } from '../hooks/api';
 
-const InsertForm = ({ table, onSubmit, onBack }) => {
+const InsertForm = ({ table, onSubmit, onBack, onError }) => {
     const [columns, setColumns] = useState([]);
     const [formValues, setFormValues] = useState({});
     const [fieldErrors, setFieldErrors] = useState({});
-    const [error, setError] = useState('');
-    const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     // Загружаем метаданные колонок таблицы
@@ -39,18 +35,16 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
                     }, {});
                     setFormValues(initValues);
                 } else {
-                    setError('Ошибка загрузки схемы таблицы.');
-                    setOpen(true);
+                    onError('Ошибка загрузки схемы таблицы.');
                 }
             } catch (err) {
-                setError(`Ошибка: ${err.message}`);
-                setOpen(true);
+                onError(`Ошибка: ${err.message}`);
             } finally {
                 setLoading(false);
             }
         };
         fetchColumnsData();
-    }, [table]);
+    }, [table, onError]);
 
     // Валидация отдельного поля
     const validateField = (col, value) => {
@@ -117,11 +111,6 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
         setFieldErrors(prev => ({ ...prev, [col.name]: errorMsg }));
     };
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') return;
-        setOpen(false);
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = {};
@@ -174,8 +163,7 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
                 serverMessage = "Некорректное значение для числового поля. Проверьте введённые данные.";
             }
 
-            setError(`Ошибка при отправке данных: ${serverMessage}`);
-            setOpen(true);
+            onError(`Ошибка при отправке данных: ${serverMessage}`);
         }
     };
 
@@ -184,147 +172,146 @@ const InsertForm = ({ table, onSubmit, onBack }) => {
     }
 
     return (
-        <>
-            <form onSubmit={handleSubmit}>
-                <h2>Insert into {table}</h2>
-                <Box
-                    component="div"
-                    sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 250px)' },
-                        gap: 2,
-                        justifyContent: 'center'
-                    }}
-                >
-                    {columns.map((col) => {
-                        // Для булевого поля отрисовываем CheckBox
-                        if (col.type && col.type.toLowerCase() === 'boolean') {
-                            return (
-                                <FormControlLabel
-                                    key={col.name}
-                                    control={
-                                        <Checkbox
-                                            checked={formValues[col.name] === true}
-                                            onChange={(e) => handleCheckboxChange(e, col.name)}
-                                            color="primary"
-                                        />
-                                    }
-                                    label={col.name}
-                                    sx={{
-                                        color: 'var(--tg-theme-text-color)',
-                                        width: '250px'
-                                    }}
-                                />
-                            );
-                        } else if (col.foreign_keys && col.options && Array.isArray(col.options)) {
-                            return (
-                                <TextField
-                                    key={col.name}
-                                    label={col.name}
-                                    select
-                                    value={formValues[col.name]}
-                                    onChange={(e) => handleChange(e, col.name)}
-                                    onBlur={(e) => handleBlur(e, col)}
-                                    margin="normal"
-                                    variant="outlined"
-                                    error={Boolean(fieldErrors[col.name])}
-                                    helperText={fieldErrors[col.name] || (col.default ? `Default: ${col.default}` : '')}
-                                    sx={{
-                                        width: '250px',
-                                        '& label.Mui': {
-                                            color: 'var(--tg-theme-text-color)'
+        <form onSubmit={handleSubmit}>
+            <h2>Insert into {table}</h2>
+            <Box
+                component="div"
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 250px)' },
+                    gap: 2,
+                    justifyContent: 'center'
+                }}
+            >
+                {columns.map((col) => {
+                    // Для булевого поля отрисовываем CheckBox
+                    if (col.type && col.type.toLowerCase() === 'boolean') {
+                        return (
+                            <FormControlLabel
+                                key={col.name}
+                                control={
+                                    <Checkbox
+                                        checked={formValues[col.name] === true}
+                                        onChange={(e) => handleCheckboxChange(e, col.name)}
+                                        color="primary"
+                                    />
+                                }
+                                label={col.name}
+                                sx={{
+                                    color: 'var(--tg-theme-text-color)',
+                                    width: '250px'
+                                }}
+                            />
+                        );
+                    } else if (col.foreign_keys && col.options && Array.isArray(col.options)) {
+                        return (
+                            <TextField
+                                key={col.name}
+                                label={col.name}
+                                select
+                                value={formValues[col.name]}
+                                onChange={(e) => handleChange(e, col.name)}
+                                onBlur={(e) => handleBlur(e, col)}
+                                margin="normal"
+                                variant="outlined"
+                                error={Boolean(fieldErrors[col.name])}
+                                helperText={fieldErrors[col.name] || (col.default ? `Default: ${col.default}` : '')}
+                                sx={{
+                                    width: '250px',
+                                    '& label.Mui': {
+                                        color: 'var(--tg-theme-text-color)'
+                                    },
+                                    '& .MuiFormLabel-root': {
+                                        color: 'var(--tg-theme-text-color)'
+                                    },
+                                    '& label.Mui-focused': {
+                                        color: 'var(--tg-theme-text-color)'
+                                    },
+                                    '& .MuiInputBase-input': {
+                                        color: 'var(--tg-theme-text-color)'
+                                    },
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            borderColor: 'var(--tg-theme-text-color)'
                                         },
-                                        '& .MuiInputBase-input': {
-                                            color: 'var(--tg-theme-text-color)'
+                                        '&:hover fieldset': {
+                                            borderColor: 'var(--tg-theme-text-color)'
                                         },
-                                        '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                                borderColor: 'var(--tg-theme-text-color)'
-                                            },
-                                            '&:hover fieldset': {
-                                                borderColor: 'var(--tg-theme-text-color)'
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                                borderColor: 'var(--tg-theme-text-color)'
-                                            }
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: 'var(--tg-theme-text-color)',
                                         }
-                                    }}
-                                >
-                                    {col.options.map((option) => (
-                                        <MenuItem key={option.value} value={option.value} sx={{ color: 'var(--tg-theme-text-color)', background: 'var(--tg-theme-bg-color)' }}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            );
-                        } else {
-                            // Определяем тип поля для TextField
-                            let inputType = 'text';
-                            if (col.type && (col.type.includes('integer') || col.type === 'numeric')) {
-                                inputType = 'number';
-                            } else if (col.type === 'date' || col.type === 'timestamp') {
-                                inputType = 'date';
-                            }
-                            return (
-                                <TextField
-                                    key={col.name}
-                                    label={col.name}
-                                    type={inputType}
-                                    value={formValues[col.name]}
-                                    onChange={(e) => handleChange(e, col.name)}
-                                    onBlur={(e) => handleBlur(e, col)}
-                                    margin="normal"
-                                    variant="outlined"
-                                    error={Boolean(fieldErrors[col.name])}
-                                    helperText={fieldErrors[col.name]}
-                                    InputLabelProps={inputType === 'date' ? { shrink: true } : {}}
-                                    sx={{
-                                        width: '250px',
-                                        '& label.Mui': {
-                                            color: 'var(--tg-theme-text-color)',
-                                        },
-                                        '& .MuiInputBase-input': {
-                                            color: 'var(--tg-theme-text-color)',
-                                        },
-                                        '& label.Mui-focused': {
-                                            color: 'var(--tg-theme-text-color)',
-                                        },
-                                        '& .MuiFormLabel-root': {
-                                            color: 'var(--tg-theme-text-color)',
-                                        },
-                                        '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                                borderColor: 'var(--tg-theme-text-color)',
-                                            },
-                                            '&:hover fieldset': {
-                                                borderColor: 'var(--tg-theme-text-color)',
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                                borderColor: 'var(--tg-theme-text-color)',
-                                            },
-                                        },
-                                    }}
-                                    placeholder={col.default ? `Default: ${col.default}` : ''}
-                                />
-                            );
+                                    }
+                                }}
+                            >
+                                {col.options.map((option) => (
+                                    <MenuItem key={option.value} value={option.value} sx={{ color: 'var(--tg-theme-text-color)', background: 'var(--tg-theme-bg-color)' }}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        );
+                    } else {
+                        // Определяем тип поля для TextField
+                        let inputType = 'text';
+                        if (col.type && (col.type.includes('integer') || col.type === 'numeric')) {
+                            inputType = 'number';
+                        } else if (col.type === 'date' || col.type === 'timestamp') {
+                            inputType = 'date';
                         }
-                    })}
-                </Box>
-                <div style={{ marginTop: 16, textAlign: 'center' }}>
-                    <TelegramButton type="submit">Submit</TelegramButton>
-                    {onBack && (
-                        <TelegramButton onClick={onBack} style={{ marginLeft: '10px' }}>
-                            Back
-                        </TelegramButton>
-                    )}
-                </div>
-            </form>
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                    {error}
-                </Alert>
-            </Snackbar>
-        </>
+                        return (
+                            <TextField
+                                key={col.name}
+                                label={col.name}
+                                type={inputType}
+                                value={formValues[col.name]}
+                                onChange={(e) => handleChange(e, col.name)}
+                                onBlur={(e) => handleBlur(e, col)}
+                                margin="normal"
+                                variant="outlined"
+                                error={Boolean(fieldErrors[col.name])}
+                                helperText={fieldErrors[col.name]}
+                                InputLabelProps={inputType === 'date' ? { shrink: true } : {}}
+                                sx={{
+                                    width: '250px',
+                                    '& label.Mui': {
+                                        color: 'var(--tg-theme-text-color)',
+                                    },
+                                    '& .MuiInputBase-input': {
+                                        color: 'var(--tg-theme-text-color)',
+                                    },
+                                    '& label.Mui-focused': {
+                                        color: 'var(--tg-theme-text-color)',
+                                    },
+                                    '& .MuiFormLabel-root': {
+                                        color: 'var(--tg-theme-text-color)',
+                                    },
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            borderColor: 'var(--tg-theme-text-color)',
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: 'var(--tg-theme-text-color)',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: 'var(--tg-theme-text-color)',
+                                        },
+                                    },
+                                }}
+                                placeholder={col.default ? `Default: ${col.default}` : ''}
+                            />
+                        );
+                    }
+                })}
+            </Box>
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <TelegramButton type="submit">Submit</TelegramButton>
+                {onBack && (
+                    <TelegramButton onClick={onBack} style={{ marginLeft: '10px' }}>
+                        Back
+                    </TelegramButton>
+                )}
+            </div>
+        </form>
     );
 };
 
@@ -332,6 +319,7 @@ InsertForm.propTypes = {
     table: PropTypes.string.isRequired,
     onSubmit: PropTypes.func.isRequired,
     onBack: PropTypes.func,
+    onError: PropTypes.func.isRequired,
 };
 
 export default InsertForm;

@@ -5,29 +5,54 @@ const SERVER_URL = 'http://127.0.0.1:5000';
 
 
 export const fetchTables = async () => {
-    const response = await axios.get(`${SERVER_URL}/table`);
-    return response.data;
+    try {
+        const response = await axios.get(`${SERVER_URL}/table`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching tables:', error);
+        return { status: 'error', message: error.message };
+    }
 };
 
 export const fetchColumns = async (table) => {
-    const response = await axios.get(`${SERVER_URL}/column/${table}`);
-    return response.data;
-}
-    ;
+    try {
+        const response = await axios.get(`${SERVER_URL}/column/${table}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching columns:', error);
+        return { status: 'error', message: error.message };
+    }
+};
+
 export const fetchColumnTypes = async (table) => {
-    const response = await axios.get(`${SERVER_URL}/column_types/${table}`);
-    console.log('fetchColumnTypes response:', response);
-    return response.data;
+    try {
+        const response = await axios.get(`${SERVER_URL}/column_types/${table}`);
+        console.log('fetchColumnTypes response:', response);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching column types:', error);
+        return { status: 'error', message: error.message };
+    }
 };
 
 export const fetchData = async (table, column) => {
-    const response = await axios.get(`${SERVER_URL}/data/${table}/${column}`);
-    return response.data;
+    try {
+        const response = await axios.get(`${SERVER_URL}/data/${table}/${column}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return { status: 'error', message: error.message };
+    }
 };
 
 export const fetchPrimaryKey = async (table) => {
-    const response = await axios.get(`${SERVER_URL}/primary_keys/${table}`);
-    return response.data;
+    try {
+        const response = await axios.get(`${SERVER_URL}/primary_keys/${table}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching primary key:', error);
+        return { status: 'error', message: error.message };
+    }
 };
 
 export const fetchDataById = async (table, id) => {

@@ -138,6 +138,10 @@ const useMenu = () => {
       setUpdateTable(null);
       return;
     }
+    if (deleteTable) {
+      setDeleteTable(null);
+      return;
+    }
     setMenuStack(prevStack => {
       if (prevStack.length > 1) {
         const newStack = prevStack.slice(0, -1);
@@ -147,7 +151,7 @@ const useMenu = () => {
       return prevStack;
     });
     setItems([]);
-  }, [tableData, insertColumns, updateTable]);
+  }, [tableData, insertColumns, updateTable, deleteTable]);
 
   const handleDelete = useCallback(async () => {
     try {
@@ -195,6 +199,7 @@ const useMenu = () => {
     setInsertColumns(null);
     setInsertTable(null);
     setUpdateTable(null);
+    setDeleteTable(null);
   }, []);
 
   backButton.onClick(handleBackClick);
