@@ -110,3 +110,14 @@ export const deleteData = async (table, keyValue) => {
         throw error;
     }
 };
+
+export const fetchCustomCommand = async (command) => {
+    try {
+      const response = await axios.post(`${SERVER_URL}/custom`, { command });
+      console.log('Custom command response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error executing custom command:', error);
+      throw error;
+    }
+  };

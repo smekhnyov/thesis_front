@@ -11,6 +11,7 @@ const useMenu = () => {
   const [insertTable, setInsertTable] = useState(null);
   const [updateTable, setUpdateTable] = useState(null);
   const [deleteTable, setDeleteTable] = useState(null);
+  const [customCommand, setCustomCommand] = useState('');
 
   const handleSelect = useCallback(async () => {
     try {
@@ -37,10 +38,15 @@ const useMenu = () => {
     }
   }, []);
 
-  const handleSelectColumn = useCallback(async (column) => {
+  const handleSelectColumn = useCallback(async (column = "all", initialTable = "") => {
     try {
-      const tableEntry = menuStack.find((entry) => entry.startsWith('item-'));
-      const tableName = tableEntry ? tableEntry.split('-')[1] : null;
+      var tableName = "";
+      if (initialTable === "") {
+        const tableEntry = menuStack.find((entry) => entry.startsWith('item-'));
+        tableName = tableEntry ? tableEntry.split('-')[1] : null;
+      } else {
+        tableName = initialTable
+      }
       if (!tableName) {
         throw new Error('Table not selected');
       }
@@ -191,6 +197,10 @@ const useMenu = () => {
     }
   }, []);
 
+  const handleCustom = useCallback(() => {
+    setMenuStack(prev => [...prev, 'customCommand']);
+  }, []);
+
   const resetMenu = useCallback(() => {
     setMenuStack(['main']);
     setItems([]);
@@ -200,6 +210,8 @@ const useMenu = () => {
     setInsertTable(null);
     setUpdateTable(null);
     setDeleteTable(null);
+    setCustomCommand('');
+    backButton.hide();
   }, []);
 
   backButton.onClick(handleBackClick);
@@ -209,6 +221,7 @@ const useMenu = () => {
     items,
     tableData,
     dataTitle,
+    customCommand,
     insertColumns,
     insertTable,
     updateTable,
@@ -225,6 +238,7 @@ const useMenu = () => {
     handleDelete,
     handleDeleteTable,
     handleDeleteSubmit,
+    handleCustom,
     handleBackClick,
     resetMenu,
   };

@@ -82,108 +82,121 @@ const DataTable = ({ title, columns, rows }) => {
     };
 
     return (
-        <Paper
-            sx={{
-                width: 'auto',
-                mb: 2,
-                backgroundColor: 'var(--tg-theme-bg-color)',
-                color: 'var(--tg-theme-text-color)',
-                border: '1px solid var(--tg-theme-button-color)',
-                borderRadius: '10px',
-                padding: 2,
-                overflowX: 'auto', // Добавлено для горизонтальной прокрутки
-                marginTop: '0',
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100vh', // Full viewport height
+                padding: '16px',
             }}
         >
-            <Toolbar
+            <Paper
                 sx={{
+                    width: '100%',
+                    maxWidth: '800px', // Limit the table width
+                    maxHeight: '80vh', // Prevent the table from exceeding 80% of the viewport height
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    backgroundColor: 'var(--tg-theme-button-color)',
+                    flexDirection: 'column',
+                    overflow: 'auto', // Enable scrolling for large tables
+                    backgroundColor: 'var(--tg-theme-bg-color)',
                     color: 'var(--tg-theme-text-color)',
+                    border: '1px solid var(--tg-theme-button-color)',
                     borderRadius: '10px',
-                    padding: '0 16px',
+                    padding: 2,
                 }}
             >
-                <Typography variant="h6" component="div">
-                    {title}
-                </Typography>
-                <TelegramButton onClick={handleCopy} sx={{marginLeft: '20px'}}>Copy JSON</TelegramButton>
-            </Toolbar>
-            <TableContainer>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            {columns.map((col) => (
-                                <TableCell
-                                    key={col.id}
-                                    align={col.numeric ? 'right' : 'left'}
-                                    sortDirection={orderBy === col.id ? order : false}
-                                    sx={{ 
-                                        borderColor: 'var(--tg-theme-button-color)',
-                                        width: 'auto' // Автоматическая ширина для ячеек заголовка
-                                    }}
-                                >
-                                    <TableSortLabel
-                                        active={orderBy === col.id}
-                                        direction={orderBy === col.id ? order : 'asc'}
-                                        onClick={(e) => handleRequestSort(e, col.id)}
-                                        sx={{
-                                            color: 'var(--tg-theme-text-color)',
-                                            '&:hover, &.Mui-active': {
-                                                color: 'var(--tg-theme-button-color)',
-                                            },
-                                            '& .MuiTableSortLabel-icon': {
-                                                color: 'var(--tg-theme-button-color)',
-                                                stroke: 'var(--tg-theme-button-color)',
-                                            },
-                                        }}
-                                    >
-                                        {col.label}
-                                    </TableSortLabel>
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {paginatedRows.map((row, rowIndex) => (
-                            <TableRow hover key={rowIndex}>
+                <Toolbar
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: 'var(--tg-theme-button-color)',
+                        color: 'var(--tg-theme-text-color)',
+                        borderRadius: '10px',
+                        padding: '0 16px',
+                    }}
+                >
+                    <Typography variant="h6" component="div">
+                        {title}
+                    </Typography>
+                    <TelegramButton onClick={handleCopy} sx={{ marginLeft: '20px' }}>Copy JSON</TelegramButton>
+                </Toolbar>
+                <TableContainer>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
                                 {columns.map((col) => (
                                     <TableCell
                                         key={col.id}
                                         align={col.numeric ? 'right' : 'left'}
-                                        sx={{ 
-                                            borderColor: 'var(--tg-theme-button-color)', 
-                                            color: 'var(--tg-theme-text-color)',
-                                            width: 'auto' // Автоматическая ширина для ячеек данных
+                                        sortDirection={orderBy === col.id ? order : false}
+                                        sx={{
+                                            borderColor: 'var(--tg-theme-button-color)',
+                                            width: 'auto' // Автоматическая ширина для ячеек заголовка
                                         }}
                                     >
-                                        {row[col.id]}
+                                        <TableSortLabel
+                                            active={orderBy === col.id}
+                                            direction={orderBy === col.id ? order : 'asc'}
+                                            onClick={(e) => handleRequestSort(e, col.id)}
+                                            sx={{
+                                                color: 'var(--tg-theme-text-color)',
+                                                '&:hover, &.Mui-active': {
+                                                    color: 'var(--tg-theme-button-color)',
+                                                },
+                                                '& .MuiTableSortLabel-icon': {
+                                                    color: 'var(--tg-theme-button-color)',
+                                                    stroke: 'var(--tg-theme-button-color)',
+                                                },
+                                            }}
+                                        >
+                                            {col.label}
+                                        </TableSortLabel>
                                     </TableCell>
                                 ))}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[rowsPerPage]}
-                component="div"
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                sx={{
-                    backgroundColor: 'var(--tg-theme-bg-color)',
-                    color: 'var(--tg-theme-text-color)',
-                    '& .MuiTablePagination-input': {
+                        </TableHead>
+                        <TableBody>
+                            {paginatedRows.map((row, rowIndex) => (
+                                <TableRow hover key={rowIndex}>
+                                    {columns.map((col) => (
+                                        <TableCell
+                                            key={col.id}
+                                            align={col.numeric ? 'right' : 'left'}
+                                            sx={{
+                                                borderColor: 'var(--tg-theme-button-color)',
+                                                color: 'var(--tg-theme-text-color)',
+                                                width: 'auto' // Автоматическая ширина для ячеек данных
+                                            }}
+                                        >
+                                            {row[col.id]}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[rowsPerPage]}
+                    component="div"
+                    count={rows.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    sx={{
+                        backgroundColor: 'var(--tg-theme-bg-color)',
                         color: 'var(--tg-theme-text-color)',
-                        stroke: 'var(--tg-theme-text-color)',
-                    },
-                }}
-            />
-        </Paper>
+                        '& .MuiTablePagination-input': {
+                            color: 'var(--tg-theme-text-color)',
+                            stroke: 'var(--tg-theme-text-color)',
+                        },
+                    }}
+                />
+            </Paper>
+        </div>
     );
 };
 

@@ -6,12 +6,10 @@ import { init, mockTelegramEnv, themeParams, backButton } from '@telegram-apps/s
 
 const initializeTelegramSDK = async () => {
     try {
-        // Попытка инициализировать настоящее окружение Telegram
         console.log("Инициализация окружения Telegram");
         const [miniApp] = init();
         await miniApp.ready();
     } catch (error) {
-        // В случае ошибки инициализируем фейковое окружение
         console.error('Ошибка при инициализации Telegram:', error);
 
         mockTelegramEnv({
@@ -84,15 +82,25 @@ const initializeTelegramSDK = async () => {
     if (backButton.mount.isAvailable()) {
         backButton.mount();
         console.log(backButton.isMounted());
-        // const onBack = backButton.isMounted();
-      }
+    }
+};
+
+// Обработка параметров URL
+const getUrlParams = () => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    const table = params.get('table');
+    const column = params.get('column');
+    return { action, table, column };
 };
 
 initializeTelegramSDK();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const { action, table, column } = getUrlParams();
+
 root.render(
     <React.StrictMode>
-        <App />
+        <App action={action} table={table} column={column} />
     </React.StrictMode>
 );

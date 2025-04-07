@@ -230,6 +230,9 @@ const InsertForm = ({ table, onSubmit, onBack, onError }) => {
                                     '& .MuiInputBase-input': {
                                         color: 'var(--tg-theme-text-color)'
                                     },
+                                    '& .MuiMenu-list': {
+                                        backgroundColor: 'var(--tg-theme-bg-color)',
+                                    },
                                     '& .MuiOutlinedInput-root': {
                                         '& fieldset': {
                                             borderColor: 'var(--tg-theme-text-color)'
@@ -284,6 +287,9 @@ const InsertForm = ({ table, onSubmit, onBack, onError }) => {
                                     },
                                     '& .MuiFormLabel-root': {
                                         color: 'var(--tg-theme-text-color)',
+                                    },
+                                    '& .MuiList-root-MuiMenu-list': {
+                                        background: 'var(--tg-theme-bg-color)',
                                     },
                                     '& .MuiOutlinedInput-root': {
                                         '& fieldset': {
